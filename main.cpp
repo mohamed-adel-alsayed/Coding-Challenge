@@ -1,22 +1,28 @@
 #include <iostream>
-#include <cwctype>
-#include <locale>
+#include <unicode/unistr.h>
+#include <unicode/uchar.h>
 
-bool isAlphabetic(wchar_t character) {
-    return std::iswalpha(character) != 0;
-}
 int main() {
-    setlocale(LC_ALL, "en_US.UTF-8"); // Set the locale to support UTF-8
-    
-    std::wstring text;
-    std::getline(std::wcin, text);
+    std::string input;
+    std::getline(std::cin, input);
 
-    for (wchar_t i : text)
-    {
-        if (isAlphabetic(i)) {
-            std::wcout << L"The character is alphabetic. : " << i << std::endl;
+    icu::UnicodeString unicodeInput = icu::UnicodeString::fromUTF8(input);
+
+    for (int32_t i = 0; i < unicodeInput.length(); ++i) {
+        UChar32 c = unicodeInput[i];
+        icu::UnicodeString originalChar(c);
+        std::string originalCharUTF8;
+        originalChar.toUTF8String(originalCharUTF8);
+        std::cout << "'" << originalCharUTF8 << "' is ";
+        if (u_charType(c) == U_UPPERCASE_LETTER || 
+            u_charType(c) == U_LOWERCASE_LETTER ||
+            u_charType(c) == U_TITLECASE_LETTER || 
+            u_charType(c) == U_MODIFIER_LETTER || 
+            u_charType(c) == U_OTHER_LETTER)
+        {
+            std::cout << "Alphabetic" << std::endl;
         } else {
-            std::wcout << L"The character is not alphabetic. : " << i << std::endl;
+            std::cout << "Not alphabetic" << std::endl;
         }
     }
     return 0;
